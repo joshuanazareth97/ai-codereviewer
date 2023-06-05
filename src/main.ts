@@ -1,4 +1,4 @@
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import * as core from "@actions/core";
 import { Configuration, OpenAIApi } from "openai";
 import { Octokit } from "@octokit/rest";
@@ -152,7 +152,7 @@ async function getAIResponse(prompt: string): Promise<Array<{
     });
 
     const res = response.data.choices[0].message?.content?.trim() || "[]";
-    console.log(JSON.parse(res));
+    writeFileSync(process.env.GITHUB_STEP_SUMMARY ?? "", res);
     return JSON.parse(res);
   } catch (error) {
     console.error("Error:", error);
