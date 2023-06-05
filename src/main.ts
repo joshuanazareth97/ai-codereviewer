@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from "fs";
 import * as core from "@actions/core";
-import { Configuration, OpenAIApi } from "openai";
+import { Configuration, CreateChatCompletionRequest, OpenAIApi } from "openai";
 import { Octokit } from "@octokit/rest";
 import parseDiff, { Chunk, File } from "parse-diff";
 import minimatch from "minimatch";
@@ -139,22 +139,26 @@ async function getAIResponse(prompt: string): Promise<Array<{
     frequency_penalty: 0,
     presence_penalty: 0,
   };
-
+  const payload: CreateChatCompletionRequest = {
+    ...queryConfig,
+    messages: [
+      {
+        role: "system",
+        content: prompt,
+      },
+    ],
+  };
   try {
-    const response = await openai.createChatCompletion({
-      ...queryConfig,
-      messages: [
-        {
-          role: "system",
-          content: prompt,
-        },
-      ],
-    });
+    const response = await openai.createChatCompletion(payload);
 
     const res = response.data.choices[0].message?.content?.trim() || "[]";
     writeFileSync(
       process.env.GITHUB_STEP_SUMMARY ?? "",
-      JSON.stringify(response.data)
+      `\`\`\`json\n
+      ${JSON.stringify({
+        payload,
+        response: response.data,
+      })}\`\`\``
     );
     return JSON.parse(res);
   } catch (error) {
