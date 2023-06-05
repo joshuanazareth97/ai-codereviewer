@@ -152,7 +152,10 @@ async function getAIResponse(prompt: string): Promise<Array<{
     });
 
     const res = response.data.choices[0].message?.content?.trim() || "[]";
-    writeFileSync(process.env.GITHUB_STEP_SUMMARY ?? "", res);
+    writeFileSync(
+      process.env.GITHUB_STEP_SUMMARY ?? "",
+      JSON.stringify(response.data)
+    );
     return JSON.parse(res);
   } catch (error) {
     console.error("Error:", error);
