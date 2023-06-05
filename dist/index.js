@@ -167,11 +167,10 @@ function getAIResponse(prompt) {
         try {
             const response = yield openai.createChatCompletion(payload);
             const res = ((_b = (_a = response.data.choices[0].message) === null || _a === void 0 ? void 0 : _a.content) === null || _b === void 0 ? void 0 : _b.trim()) || "[]";
-            (0, fs_1.writeFileSync)((_c = process.env.GITHUB_STEP_SUMMARY) !== null && _c !== void 0 ? _c : "", `\`\`\`json\n
-      ${JSON.stringify({
+            (0, fs_1.writeFileSync)((_c = process.env.GITHUB_STEP_SUMMARY) !== null && _c !== void 0 ? _c : "", JSON.stringify({
                 payload,
                 response: response.data,
-            })}\`\`\``);
+            }));
             return JSON.parse(res);
         }
         catch (error) {
