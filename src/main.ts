@@ -117,9 +117,9 @@ function createPrompts(
 - Point out any code smells in the block, but only after you understand exactly what the code does. If unsure, omit any comments about that line.
  `,
     `Provide the response in following JSON format:  [{"lineNumber":  <line_number>, "reviewComment": "<review comment>"}]`,
-    `Review the following code diff in the file \"${
+    `Review the following code diff in the file "${
       file.to
-    }\" and take the pull request title and description into account when writing the response.
+    }" and take the pull request title and description into account when writing the response.
 Pull request title: ${prDetails.title}
   
 Pull request description:
@@ -133,7 +133,7 @@ Git diff to review:
 ${chunk.content}
 ${chunk.changes
   // @ts-expect-error - ln and ln2 exists where needed
-  .map((c) => `${c.ln ? c.ln : c.ln2} ${escapeString(c.content)}`)
+  .map((c) => `${c.ln ? c.ln : c.ln2} ${c.content}`)
   .join("\n")}
 \`\`\`
 `,
