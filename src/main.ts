@@ -21,8 +21,8 @@ interface PRDetails {
 import axios from "axios";
 
 function escapeString(inputString: string) {
-  return inputString;
-  // return inputString.replace('"', '\\"').replace("`", "\\`");
+  // return inputString;
+  return inputString.replace('"', '\\"').replace("`", "\\`");
 }
 
 const apiUrl =
@@ -180,13 +180,7 @@ async function getAIResponse(prompt: [string, string, string]): Promise<Array<{
       },
     });
     const res = response.data.choices[0].message?.content?.trim() || "[]";
-    writeFileSync(
-      process.env.GITHUB_STEP_SUMMARY ?? "",
-      JSON.stringify({
-        payload,
-        response: response.data,
-      })
-    );
+
     return JSON.parse(res);
   } catch (error) {
     console.error("Error:", error);

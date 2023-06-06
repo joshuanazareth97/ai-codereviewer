@@ -52,8 +52,8 @@ const OPENAI_API_KEY = core.getInput("OPENAI_API_KEY");
 const octokit = new rest_1.Octokit({ auth: GITHUB_TOKEN });
 const axios_1 = __importDefault(__nccwpck_require__(8757));
 function escapeString(inputString) {
-    return inputString;
-    // return inputString.replace('"', '\\"').replace("`", "\\`");
+    // return inputString;
+    return inputString.replace('"', '\\"').replace("`", "\\`");
 }
 const apiUrl = "https://southregiontesting.openai.azure.com/openai/deployments/Test1/chat/completions";
 function getPRDetails() {
@@ -133,7 +133,7 @@ function createPrompts(file, chunk, prDetails) {
 - Point out any code smells in the block, but only after you understand exactly what the code does. If unsure, omit any comments about that line.
  `,
         `Provide the response in following JSON format:  [{"lineNumber":  <line_number>, "reviewComment": "<review comment>"}]`,
-        `Review the following code diff in the file \"${file.to}\" and take the pull request title and description into account when writing the response.
+        `Review the following code diff in the file "${file.to}" and take the pull request title and description into account when writing the response.
 Pull request title: ${prDetails.title}
   
 Pull request description:
@@ -147,14 +147,14 @@ Git diff to review:
 ${chunk.content}
 ${chunk.changes
             // @ts-expect-error - ln and ln2 exists where needed
-            .map((c) => `${c.ln ? c.ln : c.ln2} ${escapeString(c.content)}`)
+            .map((c) => `${c.ln ? c.ln : c.ln2} ${c.content}`)
             .join("\n")}
 \`\`\`
 `,
     ];
 }
 function getAIResponse(prompt) {
-    var _a, _b, _c;
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         const queryConfig = {
             // model: "gpt-3.5-turbo",
@@ -189,10 +189,6 @@ function getAIResponse(prompt) {
                 },
             });
             const res = ((_b = (_a = response.data.choices[0].message) === null || _a === void 0 ? void 0 : _a.content) === null || _b === void 0 ? void 0 : _b.trim()) || "[]";
-            (0, fs_1.writeFileSync)((_c = process.env.GITHUB_STEP_SUMMARY) !== null && _c !== void 0 ? _c : "", JSON.stringify({
-                payload,
-                response: response.data,
-            }));
             return JSON.parse(res);
         }
         catch (error) {
