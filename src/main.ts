@@ -21,7 +21,8 @@ interface PRDetails {
 import axios from "axios";
 
 function escapeString(inputString: string) {
-  return inputString.replace('"', '\\"').replace("`", "\\`");
+  return inputString;
+  // return inputString.replace('"', '\\"').replace("`", "\\`");
 }
 
 const apiUrl =
