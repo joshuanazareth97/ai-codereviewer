@@ -1,20 +1,14 @@
-import { readFileSync, writeFileSync } from "fs";
 import * as core from "@actions/core";
-import { Configuration, CreateChatCompletionRequest, OpenAIApi } from "openai";
 import { Octokit } from "@octokit/rest";
-import parseDiff, { Chunk, File } from "parse-diff";
+import { readFileSync, writeFileSync } from "fs";
 import minimatch from "minimatch";
+import { CreateChatCompletionRequest } from "openai";
+import parseDiff, { Chunk, File } from "parse-diff";
 
 const GITHUB_TOKEN: string = core.getInput("GITHUB_TOKEN");
 const OPENAI_API_KEY: string = core.getInput("OPENAI_API_KEY");
 
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
-
-const configuration = new Configuration({
-  apiKey: OPENAI_API_KEY,
-});
-
-const openai = new OpenAIApi(configuration);
 
 interface PRDetails {
   owner: string;
@@ -110,12 +104,16 @@ function createPrompts(
   prDetails: PRDetails
 ): [string, string, string] {
   return [
-    `Your task is to review pull requests. Instructions:
+    `You are a code analyzer and experienced software developer. Your task is to review pull requests. Instructions:
 - Do not give positive comments or compliments.
 - Provide comments and suggestions ONLY if there is something to improve, otherwise return an empty array.
 - Write the comment in GitHub Markdown format.
 - Use the given description only for the overall context and only comment the code.
+- Check your comment to make sure it is correct.
+- IMPORTANT: Do not make assumptions about what the code is supposed to do, only suggest improvements in syntax, keeping in mind the best practices of Javascript. 
+- DO NOT suggest linting or formatting changes.
 - IMPORTANT: NEVER suggest adding comments to the code.
+- Point out any code smells in the block, but only after you understand exactly what the code does. If unsure, omit any comments about that line.
  `,
     `Provide the response in following JSON format:  [{"lineNumber":  <line_number>, "reviewComment": "<review comment>"}]`,
     `Review the following code diff in the file \"${
