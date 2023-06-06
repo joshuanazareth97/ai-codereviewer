@@ -24,6 +24,15 @@ interface PRDetails {
   description: string;
 }
 
+import axios from "axios";
+
+function escapeString(inputString: string) {
+  return inputString.replace('"', '\\"').replace("`", "\\`");
+}
+
+const apiUrl =
+  "https://southregiontesting.openai.azure.com/openai/deployments/Test1/chat/completions";
+
 async function getPRDetails(): Promise<PRDetails> {
   const { repository, number } = JSON.parse(
     readFileSync(process.env.GITHUB_EVENT_PATH || "", "utf8")
@@ -66,8 +75,8 @@ async function analyzeCode(
   for (const file of parsedDiff) {
     if (file.to === "/dev/null") continue; // Ignore deleted files
     for (const chunk of file.chunks) {
-      const prompt = createPrompt(file, chunk, prDetails);
-      const aiResponse = await getAIResponse(prompt);
+      const prompts = createPrompts(file, chunk, prDetails);
+      const aiResponse = await getAIResponse(prompts);
       if (aiResponse) {
         const newComments = createComment(file, chunk, aiResponse);
         if (newComments) {
@@ -95,22 +104,26 @@ async function getBaseAndHeadShas(
   };
 }
 
-function createPrompt(file: File, chunk: Chunk, prDetails: PRDetails): string {
-  return `Your task is to review pull requests. Instructions:
-- Provide the response in following JSON format:  [{"lineNumber":  <line_number>, "reviewComment": "<review comment>"}]
+function createPrompts(
+  file: File,
+  chunk: Chunk,
+  prDetails: PRDetails
+): [string, string, string] {
+  return [
+    `Your task is to review pull requests. Instructions:
 - Do not give positive comments or compliments.
 - Provide comments and suggestions ONLY if there is something to improve, otherwise return an empty array.
 - Write the comment in GitHub Markdown format.
 - Use the given description only for the overall context and only comment the code.
 - IMPORTANT: NEVER suggest adding comments to the code.
-
-Review the following code diff in the file "${
-    file.to
-  }" and take the pull request title and description into account when writing the response.
-  
+ `,
+    `Provide the response in following JSON format:  [{"lineNumber":  <line_number>, "reviewComment": "<review comment>"}]`,
+    `Review the following code diff in the file \"${
+      file.to
+    }\" and take the pull request title and description into account when writing the response.
 Pull request title: ${prDetails.title}
+  
 Pull request description:
-
 ---
 ${prDetails.description}
 ---
@@ -121,36 +134,52 @@ Git diff to review:
 ${chunk.content}
 ${chunk.changes
   // @ts-expect-error - ln and ln2 exists where needed
-  .map((c) => `${c.ln ? c.ln : c.ln2} ${c.content}`)
+  .map((c) => `${c.ln ? c.ln : c.ln2} ${escapeString(c.content)}`)
   .join("\n")}
 \`\`\`
-`;
+`,
+  ];
 }
 
-async function getAIResponse(prompt: string): Promise<Array<{
+async function getAIResponse(prompt: [string, string, string]): Promise<Array<{
   lineNumber: string;
   reviewComment: string;
 }> | null> {
   const queryConfig = {
-    model: "gpt-3.5-turbo",
-    temperature: 0.2,
+    // model: "gpt-3.5-turbo",
+    // temperature: 0.2,
     max_tokens: 700,
-    top_p: 1,
-    frequency_penalty: 0,
-    presence_penalty: 0,
+    // top_p: 1,
+    // frequency_penalty: 0,
+    // presence_penalty: 0,
   };
-  const payload: CreateChatCompletionRequest = {
+  const payload: Partial<CreateChatCompletionRequest> = {
     ...queryConfig,
     messages: [
       {
         role: "system",
-        content: prompt,
+        content: prompt[0],
+      },
+      {
+        role: "system",
+        content: prompt[1],
+      },
+      {
+        role: "user",
+        content: prompt[2],
       },
     ],
   };
   try {
-    const response = await openai.createChatCompletion(payload);
-
+    const response = await axios.post(apiUrl, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": OPENAI_API_KEY,
+      },
+      params: {
+        "api-version": "2023-05-15",
+      },
+    });
     const res = response.data.choices[0].message?.content?.trim() || "[]";
     writeFileSync(
       process.env.GITHUB_STEP_SUMMARY ?? "",
