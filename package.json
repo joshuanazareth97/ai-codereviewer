@@ -16,7 +16,6 @@
     "@actions/core": "^1.10.0",
     "@octokit/rest": "^19.0.7",
     "axios": "^1.4.0",
-    "gitdiff-parser": "^0.3.1",
     "minimatch": "^7.4.2",
     "openai": "^3.2.1",
     "parse-diff": "^0.11.1",

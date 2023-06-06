@@ -267,11 +267,6 @@
     "combined-stream" "^1.0.8"
     "mime-types" "^2.1.12"
 
-"gitdiff-parser@^0.3.1":
-  "integrity" "sha512-YQJnY8aew65id8okGxKCksH3efDCJ9HzV7M9rsvd65habf39Pkh4cgYJ27AaoDMqo1X98pgNJhNMrm/kpV7UVQ=="
-  "resolved" "https://registry.npmjs.org/gitdiff-parser/-/gitdiff-parser-0.3.1.tgz"
-  "version" "0.3.1"
-
 "is-plain-object@^5.0.0":
   "integrity" "sha512-VRSzKkbMm5jMDoKLbltAkFQ5Qr7VDiTFGXxYFXXowVj387GeGNOCsOH6Msy00SGZ3Fp84b1Naa1psqgcCIEP5Q=="
   "resolved" "https://registry.npmjs.org/is-plain-object/-/is-plain-object-5.0.0.tgz"
