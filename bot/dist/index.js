@@ -232,11 +232,10 @@ function main() {
         else if (eventData.action === "synchronize") {
             const newBaseSha = eventData.before;
             const newHeadSha = eventData.after;
-            const response = yield octokit.repos.compareCommits({
+            const response = yield octokit.repos.compareCommitsWithBasehead({
                 owner: prDetails.owner,
                 repo: prDetails.repo,
-                base: newBaseSha,
-                head: newHeadSha,
+                basehead: `${newBaseSha}...${newHeadSha}`,
             });
             diff = response.data.diff_url
                 ? yield octokit
