@@ -240,11 +240,10 @@ async function main() {
     const newBaseSha = eventData.before;
     const newHeadSha = eventData.after;
 
-    const response = await octokit.repos.compareCommits({
+    const response = await octokit.repos.compareCommitsWithBasehead({
       owner: prDetails.owner,
       repo: prDetails.repo,
-      base: newBaseSha,
-      head: newHeadSha,
+      basehead: `${newBaseSha}...${newHeadSha}`,
     });
 
     diff = response.data.diff_url
